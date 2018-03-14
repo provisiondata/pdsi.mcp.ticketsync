@@ -22,18 +22,25 @@ namespace PDSI.MCP.TicketSync
 			var log = GetLogger();
 
 			using (var vTiger = GetVTigerConnection()) {
-				var row = vTiger.Query("SELECT * FROM vtiger_account").FirstOrDefault();
-				log.Information(row.ToString());
+				var rows = vTiger.Query<vtAccount>("SELECT * FROM vtiger_account").OrderBy(a => a.accountname).Select(a => $"{a.accountname} [{a.accountid}]");
+				log.Verbose(String.Join("\n", rows));
+				log.Information("Successfully Connected to vTiger Database");
 			}
 
 			using (var racktables = GetRacktablesConnection()) {
-				var row = racktables.Query("SELECT * FROM Object").FirstOrDefault();
-				log.Information(row.ToString());
+				var rows = racktables.Query<rtObject>("SELECT * FROM Object");
+				//foreach(var row in rows) {
+				//	log.Information("[{id}] {name} <{label}>", row.id, row.name, row.label);
+				//}
+				log.Information("Successfully Connected to Racktables Database");
 			}
 
 			using (var smarterTrack = GetSmarterTrackConnection()) {
-				var row = smarterTrack.Query("SELECT * FROM [SmarterTrack].[dbo].[st_Tickets]").FirstOrDefault();
-				log.Information(row.ToString());
+				var rows = smarterTrack.Query<StTickets>("SELECT * FROM [st_Tickets]").Take(100);
+				//foreach(var row in rows) {
+				//	log.Verbose("[{TicketNumber}] {Subject} <{CustomerEmailAddress}>", row.TicketNumber, row.Subject, row.CustomerEmailAddress);
+				//}
+				log.Information("Successfully Connected to SmarterTrack Database");
 			}
 
 			var smConfig = Configuration.GetSection(nameof(SmarterTrack)).Get<SmarterTrack>();
@@ -47,8 +54,7 @@ namespace PDSI.MCP.TicketSync
 			};
 			var request = new GetTicketsBySearchRequest(body);
 			var result = serviceProxy.GetTicketsBySearch(request);
-
-			Console.Write("Tickets Returned:" + result.Body.GetTicketsBySearchResult.Tickets.Count());
+			log.Information("Successfully Connected to SmarterTrack Webservice");
 
 			if (Debugger.IsAttached) {
 				Console.WriteLine("Press ENTER to EXIT . . .");
