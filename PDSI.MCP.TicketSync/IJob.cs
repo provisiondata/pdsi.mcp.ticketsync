@@ -1,10 +1,14 @@
-﻿using Serilog;
+﻿using Humanizer;
+using Serilog;
+using System;
+using System.Threading.Tasks;
 
 namespace PDSI.MCP.TicketSync
 {
 	public interface IJob
 	{
-		JobResult Execute();
+		String Name { get; }
+		Task<JobResult> Execute();
 	}
 
 	public abstract class Job : IJob
@@ -13,8 +17,12 @@ namespace PDSI.MCP.TicketSync
 			Logger = logger;
 		}
 
+		public virtual String Name => GetType().Name.Humanize();
+
 		protected ILogger Logger { get; }
 
-		public abstract JobResult Execute();
+		public abstract Task<JobResult> Execute();
+
+		public override String ToString() => Name;
 	}
 }

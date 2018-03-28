@@ -1,5 +1,5 @@
 ﻿using System;
-using PDSI.MCP.TicketSync.Jobs;
+using System.Threading.Tasks;
 using Serilog;
 using StructureMap;
 
@@ -14,8 +14,8 @@ namespace PDSI.MCP.TicketSync
 			using (var container = new Container(new TicketSyncRegistry()))
 			{
 				InitLogging(container);
-
-				return Run(container);
+				var result = RunAsync(container).GetAwaiter().GetResult();
+				return result;
 			}
 		}
 
@@ -34,15 +34,20 @@ namespace PDSI.MCP.TicketSync
 			}
 		}
 
-		private static Int32 Run(Container container)
+		private static async Task<Int32> RunAsync(Container container)
 		{
 			try
 			{
 				foreach(var job in container.GetAllInstances<IJob>())
 				{
-					_log.Information($"Starting: {job.GetType()}");
-					var result = job.Execute();
-					_log.Information($"Stopped: {job.GetType()}");
+					try {
+						_log.Information($"Starting: {job}");
+						var result = await job.Execute();
+						_log.Information($"Stopped: {job}");
+					}
+					catch (Exception exception) {
+						exception.Visit(ex => _log.Error(ex, ex.Message));
+					}
 				}
 
 				return 0; // No Errors

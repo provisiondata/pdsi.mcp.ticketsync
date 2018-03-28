@@ -3,7 +3,7 @@ using System.Data;
 using System.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
-using PDSI.MCP.TicketSync.Jobs;
+using PDSI.SmarterTrackClient;
 using Serilog;
 using StructureMap;
 using StructureMap.Pipeline;
@@ -35,31 +35,31 @@ namespace PDSI.MCP.TicketSync
 					.ReadFrom.Configuration(ctx.GetInstance<IConfiguration>(), null)
 					.CreateLogger());
 
-			For<IVTigerConnection>()
+			For<IVTigerContext>()
 				.LifecycleIs<TransientLifecycle>()
-				.Use(ctx => GetMySqlConnection<IVTigerConnection>(ctx.GetInstance<IConfiguration>().GetConnectionString("vTiger")));
+				.Use(ctx => new VTigerContext(GetMySqlConnection(ctx.GetInstance<IConfiguration>().GetConnectionString("vTiger"))));
 
-			For<IRactablesConnection>()
+			For<IRactablesContext>()
 				.LifecycleIs<TransientLifecycle>()
-				.Use(ctx => GetMySqlConnection<IRactablesConnection>(ctx.GetInstance<IConfiguration>().GetConnectionString("Racktables")));
+				.Use(ctx => new RactablesContext(GetMySqlConnection(ctx.GetInstance<IConfiguration>().GetConnectionString("Racktables"))));
 
-			For<ISmarterTrackConnection>()
+			For<ISmarterTrackContext>()
 				.LifecycleIs<TransientLifecycle>()
-				.Use(ctx => GetSqlServerConnection<ISmarterTrackConnection>(ctx.GetInstance<IConfiguration>().GetConnectionString("SmarterTrack")));
+				.Use(ctx => new SmarterTrackContext(GetSqlServerConnection(ctx.GetInstance<IConfiguration>().GetConnectionString("SmarterTrack")), ctx.GetInstance<IConfiguration>().GetSection(nameof(SmarterTrack)).Get<SmarterTrack>()));
 		}
 
-		static T GetMySqlConnection<T>(String connectionString) where T: class, IDbConnection
+		static IDbConnection GetMySqlConnection(String connectionString)
 		{
 			var connection = new MySqlConnection(connectionString);
 			connection.Open();
-			return connection as T;
+			return connection;
 		}
 
-		static T GetSqlServerConnection<T>(String connectionString) where T : class, IDbConnection
+		static IDbConnection GetSqlServerConnection(String connectionString)
 		{
 			var connection = new SqlConnection(connectionString);
 			connection.Open();
-			return connection as T;
+			return connection;
 		}
 	}
 }
