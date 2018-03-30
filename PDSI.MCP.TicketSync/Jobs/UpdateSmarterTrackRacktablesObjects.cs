@@ -1,14 +1,45 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Dapper;
+using PDSI.SmarterTrackClient;
 using Serilog;
 
 namespace PDSI.MCP.TicketSync.Jobs
 {
 	public class UpdateSmarterTrackRacktablesObjects : Job
 	{
-		protected UpdateSmarterTrackRacktablesObjects(ILogger logger) : base(logger)
+		private readonly IRactablesContext _rackTables;
+		private readonly ISmarterTrackContext _smarterTrack;
+
+		public UpdateSmarterTrackRacktablesObjects(ILogger logger, IRactablesContext vTiger, ISmarterTrackContext smarterTrack)
+			: base(logger)
 		{
+			_rackTables = vTiger;
+			_smarterTrack = smarterTrack;
 		}
 
-		public override Task<JobResult> Execute() => Task.FromResult(new JobResult());
+		public override async Task<JobResult> Execute()
+		{
+			try {
+				var objects = await _rackTables.Connection.QueryAsync<rtObject>("SELECT * FROM Object");
+				var options = objects.OrderBy(a => a.name).Select(a => $"{a.name} [{a.id}]");
+				var cdf = new StCustomDataFields() {
+					CustomFieldId = _smarterTrack.Config.AssetCustomFieldId,
+					Options = String.Join("\n", options)
+				};
+
+				// Update
+				using (var transaction = _smarterTrack.Connection.BeginTransaction()) {
+					await _smarterTrack.Connection.ExecuteAsync("UPDATE [st_CustomDataFields] SET [Options] = @Options WHERE [CustomFieldId] = @CustomFieldId", cdf, transaction);
+					transaction.Commit();
+				}
+			}
+			catch (Exception ex) {
+				Logger.Error("Something bad happened.", ex);
+			}
+
+			return new JobResult() { };
+		}
 	}
 }
