@@ -17,7 +17,7 @@ namespace PDSI.MCP.TicketSync
 			Logger = logger;
 		}
 
-		public virtual String Name => GetType().Name.Humanize();
+		public virtual String Name => GetType().Name.Humanize(LetterCasing.Title);
 
 		protected ILogger Logger { get; }
 
