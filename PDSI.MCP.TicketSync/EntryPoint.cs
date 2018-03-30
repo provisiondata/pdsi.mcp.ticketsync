@@ -24,8 +24,9 @@ namespace PDSI.MCP.TicketSync
 			try
 			{
 				_log = container.GetInstance<ILogger>();
-				_log.Debug(container.WhatDidIScan());
-				_log.Debug(container.WhatDoIHave());
+				_log.Information($"TicketSync Running: {DateTimeOffset.Now}");
+				_log.Verbose(container.WhatDidIScan());
+				_log.Verbose(container.WhatDoIHave());
 			}
 			catch (Exception ex)
 			{
@@ -41,9 +42,9 @@ namespace PDSI.MCP.TicketSync
 				foreach(var job in container.GetAllInstances<IJob>())
 				{
 					try {
-						_log.Information($"Starting: {job}");
+						_log.Information($"TicketSync Started: {job}");
 						var result = await job.Execute();
-						_log.Information($"Stopped: {job}");
+						_log.Information($"TicketSync Finished: {job}");
 					}
 					catch (Exception exception) {
 						exception.Visit(ex => _log.Error(ex, ex.Message));
