@@ -9,6 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PDSI.SmarterTrackClient", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PDSI.MCP.TicketSync.Test", "PDSI.MCP.TicketSync.Test\PDSI.MCP.TicketSync.Test.csproj", "{B9EFA367-6812-49D0-8C09-D002E8A2F798}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F8B35BA5-242F-4645-B5EA-37A4606248BD}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		global.json = global.json
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
