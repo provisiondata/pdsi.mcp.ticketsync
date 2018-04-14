@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Data;
-using System.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
-using PDSI.SmarterTrackClient;
 using Serilog;
 using StructureMap;
 using StructureMap.Pipeline;
 
 namespace PDSI.MCP.TicketSync
 {
-	internal class TicketSyncRegistry : Registry
+    internal class TicketSyncRegistry : Registry
 	{
 		public TicketSyncRegistry()
 		{
 			Scan(_ => {
-				_.TheCallingAssembly();
+                _.AssembliesAndExecutablesFromApplicationBaseDirectory();
 				_.WithDefaultConventions();
+                _.LookForRegistries();
 				_.AddAllTypesOf<IJob>();
 			});
 
@@ -43,21 +42,11 @@ namespace PDSI.MCP.TicketSync
 				.LifecycleIs<TransientLifecycle>()
 				.Use(ctx => new RactablesContext(GetMySqlConnection(ctx.GetInstance<IConfiguration>().GetConnectionString("Racktables"))));
 
-			For<ISmarterTrackContext>()
-				.LifecycleIs<TransientLifecycle>()
-				.Use(ctx => new SmarterTrackContext(GetSqlServerConnection(ctx.GetInstance<IConfiguration>().GetConnectionString("SmarterTrack")), ctx.GetInstance<IConfiguration>().GetSection(nameof(SmarterTrack)).Get<SmarterTrack>()));
 		}
 
 		static IDbConnection GetMySqlConnection(String connectionString)
 		{
 			var connection = new MySqlConnection(connectionString);
-			connection.Open();
-			return connection;
-		}
-
-		static IDbConnection GetSqlServerConnection(String connectionString)
-		{
-			var connection = new SqlConnection(connectionString);
 			connection.Open();
 			return connection;
 		}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -18,17 +19,27 @@ namespace PDSI.MCP.TicketSync
 			{
 				Init(container);
 				var result = RunAsync(container).GetAwaiter().GetResult();
+                DebuggerWait();
 				return result;
 			}
 		}
 
-		private static void Init(Container container)
+        private static void DebuggerWait()
+        {
+            if (Debugger.IsAttached)
+            {
+                Console.WriteLine("Looks like you're debugging.  Press ENTER to EXIT . . .");
+                Console.ReadLine();
+            }
+        }
+
+        private static void Init(Container container)
 		{
 			try
 			{
 				_configuration = container.GetInstance<IConfiguration>().GetSection(TicketSyncConfig.SectionName).Get<TicketSyncConfig>();
 				_log = container.GetInstance<ILogger>();
-				_log.Information($"TicketSync Running: {DateTimeOffset.Now}");
+				_log.Information($"TicketSync Running: {DateTimeOffset.Now} {Environment.GetEnvironmentVariable("MCP_ENVIRONMENT") ?? "Production"}");
 				_log.Verbose(container.WhatDidIScan());
 				_log.Verbose(container.WhatDoIHave());
 			}

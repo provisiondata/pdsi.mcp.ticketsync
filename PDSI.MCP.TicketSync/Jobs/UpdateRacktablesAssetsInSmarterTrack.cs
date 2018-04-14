@@ -7,12 +7,12 @@ using Serilog;
 
 namespace PDSI.MCP.TicketSync.Jobs
 {
-	public class UpdateSmarterTrackRacktablesObjects : Job
+	public class UpdateRacktablesAssetsInSmarterTrack : Job
 	{
 		private readonly IRactablesContext _rackTables;
 		private readonly ISmarterTrackContext _smarterTrack;
 
-		public UpdateSmarterTrackRacktablesObjects(ILogger logger, IRactablesContext vTiger, ISmarterTrackContext smarterTrack)
+		public UpdateRacktablesAssetsInSmarterTrack(ILogger logger, IRactablesContext vTiger, ISmarterTrackContext smarterTrack)
 			: base(logger)
 		{
 			_rackTables = vTiger;

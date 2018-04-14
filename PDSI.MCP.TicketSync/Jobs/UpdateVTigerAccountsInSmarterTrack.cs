@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace PDSI.MCP.TicketSync.Jobs
 {
-	public class UpdateSmarterTrackVTigerAccounts : Job
+	public class UpdateVTigerAccountsInSmarterTrack : Job
 	{
 		private readonly IVTigerContext _vTiger;
 		private readonly ISmarterTrackContext _smarterTrack;
 
-		public UpdateSmarterTrackVTigerAccounts(ILogger logger, IVTigerContext vTiger, ISmarterTrackContext smarterTrack)
+		public UpdateVTigerAccountsInSmarterTrack(ILogger logger, IVTigerContext vTiger, ISmarterTrackContext smarterTrack)
 			: base(logger)
 		{
 			_vTiger = vTiger;

@@ -2,7 +2,7 @@
 
 namespace PDSI.MCP.TicketSync
 {
-	static class Extensions
+	public static class Extensions
 	{
 		public static void Visit(this Exception ex, Action<Exception> action)
 		{
@@ -14,5 +14,19 @@ namespace PDSI.MCP.TicketSync
 				iex = iex.InnerException;
 			}
 		}
-	}
+
+        public static String Id(this String s)
+        {
+            var start = s.LastIndexOf('[');
+            if (start >= 0)
+            {
+                var end = s.LastIndexOf(']');
+                if (end > start)
+                {
+                    return s.Substring(start + 1, end - 1 - start);
+                }
+            }
+            return String.Empty;
+        }
+    }
 }

@@ -5,7 +5,9 @@ VisualStudioVersion = 15.0.27428.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PDSI.MCP.TicketSync", "PDSI.MCP.TicketSync\PDSI.MCP.TicketSync.csproj", "{6DBDAD10-FBCD-458B-B00C-2B014A9E00C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDSI.SmarterTrackClient", "PDSI.SmarterTrackClient\PDSI.SmarterTrackClient.csproj", "{FDC4F1EA-D848-4EE5-B07C-0D303429E07F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PDSI.SmarterTrackClient", "PDSI.SmarterTrackClient\PDSI.SmarterTrackClient.csproj", "{FDC4F1EA-D848-4EE5-B07C-0D303429E07F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PDSI.MCP.TicketSync.Test", "PDSI.MCP.TicketSync.Test\PDSI.MCP.TicketSync.Test.csproj", "{B9EFA367-6812-49D0-8C09-D002E8A2F798}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{FDC4F1EA-D848-4EE5-B07C-0D303429E07F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDC4F1EA-D848-4EE5-B07C-0D303429E07F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FDC4F1EA-D848-4EE5-B07C-0D303429E07F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9EFA367-6812-49D0-8C09-D002E8A2F798}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9EFA367-6812-49D0-8C09-D002E8A2F798}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9EFA367-6812-49D0-8C09-D002E8A2F798}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9EFA367-6812-49D0-8C09-D002E8A2F798}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
