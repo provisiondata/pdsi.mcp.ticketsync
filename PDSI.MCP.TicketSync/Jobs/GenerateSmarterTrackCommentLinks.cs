@@ -118,14 +118,14 @@ namespace PDSI.MCP.TicketSync.Jobs
         {
             var sb = new StringBuilder();
             var account = customFields.SingleOrDefault(c => c.Name.Equals("Account", StringComparison.InvariantCultureIgnoreCase));
-            if (account != null)
+            if (account != null && !String.IsNullOrEmpty(account.Value.Id()))
             {
                 sb.AppendLine($"Account: {account.Value}");
                 sb.AppendLine($"Account URL: {_config.AccountUrlTemplate.Replace("{{AccountId}}", account.Value.Id())}");
                 sb.AppendLine();
             }
             var asset = customFields.SingleOrDefault(c => c.Name.Equals("Asset", StringComparison.InvariantCultureIgnoreCase));
-            if (asset != null)
+            if (asset != null && !String.IsNullOrEmpty(asset.Value.Id()))
             {
                 sb.AppendLine($"Asset: {asset.Value}");
                 sb.AppendLine($"Asset URL: {_config.AssetUrlTemplate.Replace("{{AssetId}}", asset.Value.Id())}");
