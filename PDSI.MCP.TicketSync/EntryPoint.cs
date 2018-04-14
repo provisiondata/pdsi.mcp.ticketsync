@@ -17,7 +17,7 @@ namespace PDSI.MCP.TicketSync
 		{
 			using (var container = new Container(new TicketSyncRegistry()))
 			{
-				Init(container);
+                Init(container);
 				var result = RunAsync(container).GetAwaiter().GetResult();
                 DebuggerWait();
 				return result;
@@ -42,8 +42,9 @@ namespace PDSI.MCP.TicketSync
 				_log.Information($"TicketSync Running: {DateTimeOffset.Now} {Environment.GetEnvironmentVariable("MCP_ENVIRONMENT") ?? "Production"}");
 				_log.Verbose(container.WhatDidIScan());
 				_log.Verbose(container.WhatDoIHave());
-			}
-			catch (Exception ex)
+                StructureMap.Graph.Scanning.TypeRepository.AssertNoTypeScanningFailures();
+            }
+            catch (Exception ex)
 			{
 				Console.Error.WriteLine(ex.GetType() + ": " + ex.Message);
 				throw;
