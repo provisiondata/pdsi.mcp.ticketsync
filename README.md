@@ -1,6 +1,9 @@
 # pdsi.mcp.ticketsync
 Syncs SmarterTrack with vTiger and Racktables for SOC 2 compliance
 
+[![Build status](https://ci.appveyor.com/api/projects/status/fyi1f6c1hjyqqv6g?svg=true)](https://ci.appveyor.com/project/dougkwilson/pdsi-mcp-ticketsync)
+
+
 ## Command Line Options
 
 | Option        | Description

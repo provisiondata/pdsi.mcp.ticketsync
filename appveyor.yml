@@ -1,0 +1,11 @@
+image: Visual Studio 2017
+version: 1.0.{build}
+
+build_script:
+  - dotnet restore -v quiet
+  - ps: dotnet build /p:configuration=Release /p:Version=$($env:appveyor_build_version)
+
+test_script:
+- dotnet test PDSI.MCP.TicketSync.Test/PDSI.MCP.TicketSync.Test.csproj
+
+deploy: off
