@@ -1,5 +1,5 @@
 # pdsi.mcp.ticketsync
-Syncs SmarterTrack with vTiger and Racktables for SOC 2 compliance
+Syncs SmarterTrack with vTiger and RackTables for SOC 2 compliance
 
 [![Build status](https://ci.appveyor.com/api/projects/status/fyi1f6c1hjyqqv6g?svg=true)](https://ci.appveyor.com/project/dougkwilson/pdsi-mcp-ticketsync)
 
@@ -23,7 +23,7 @@ TicketSync runs a series of Jobs.  You may want to enable/disable them individua
 "TicketSync": {
   "Jobs": [
     { "Name": "UpdateVTigerAccountsInSmarterTrack", "Enabled": false },
-    { "Name": "UpdateRacktablesAssetsInSmarterTrack", "Enabled": false },
+    { "Name": "UpdateRackTablesAssetsInSmarterTrack", "Enabled": false },
     { "Name": "GenerateSmarterTrackCommentLinks", "Enabled": true }
   ]
 }

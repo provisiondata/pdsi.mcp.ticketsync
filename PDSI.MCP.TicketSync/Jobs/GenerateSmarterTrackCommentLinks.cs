@@ -8,18 +8,16 @@ using Serilog;
 
 namespace PDSI.MCP.TicketSync.Jobs
 {
-    public class GenerateSmarterTrackCommentLinks : Job
+    public class GenerateSmarterTrackCommentLinks : SmarterTrackJob
     {
-        private readonly ISmarterTrackContext _smarterTrack;
         private readonly SmarterTrack _config;
 
-        public GenerateSmarterTrackCommentLinks(ILogger logger, ISmarterTrackContext smarterTrack) : base(logger)
+        public GenerateSmarterTrackCommentLinks(ILogger logger, ISmarterTrackContext smarterTrack) : base(logger, smarterTrack)
         {
-            _smarterTrack = smarterTrack;
             _config = smarterTrack.Config;
         }
 
-        public override async Task<JobResult> Execute()
+        public override async Task<JobResult> ExecuteAsync()
         {
             var svc = await GetSmarterTrackTicketsServiceAsync();
             var tickets = await GetTicketsAsync(svc);
@@ -53,36 +51,6 @@ namespace PDSI.MCP.TicketSync.Jobs
             return new JobResult() { };
         }
 
-        private async Task<svcTicketsSoapClient> GetSmarterTrackTicketsServiceAsync()
-        {
-            var svc = new svcTicketsSoapClient(svcTicketsSoapClient.EndpointConfiguration.svcTicketsSoap12, _smarterTrack.Config.EndpointAddress);
-            await svc.OpenAsync().ConfigureAwait(false);
-            return svc;
-        }
-
-        private async Task<IEnumerable<TicketInfo>> GetTicketsAsync(svcTicketsSoapClient svc)
-        {
-            var response = await svc.GetTicketsBySearchAsync(_config.AuthUserName, _config.AuthPassword, new ArrayOfString()).ConfigureAwait(false);
-            var tickets = response.Body.GetTicketsBySearchResult.Tickets.OrderByDescending(t => t.LastReplyDateUtc).Take(_config.TicketScanLimit);
-            return tickets;
-        }
-
-        private async Task<IEnumerable<CustomField>> GetAccountOrAssetFieldsAsync(svcTicketsSoapClient svc, TicketInfo ticket)
-        {
-            var list = new List<CustomField>();
-            var tcfl = await svc.GetTicketCustomFieldsListAsync(_config.AuthUserName, _config.AuthPassword, ticket.TicketNumber).ConfigureAwait(false);
-            foreach (var result in tcfl.Body.GetTicketCustomFieldsListResult.RequestResults)
-            {
-
-                var cf = result.ParseCustomField();
-                if (IsAccountOrAsset(cf))
-                {
-                    list.Add(cf);
-                }
-            }
-            return list;
-        }
-
         private async Task<TicketCommentInfo> GetSoc2CommentAsync(svcTicketsSoapClient svc, TicketInfo ticket)
         {
             var list = await GetCommentsAsync(svc, ticket).ConfigureAwait(false);
@@ -114,21 +82,21 @@ namespace PDSI.MCP.TicketSync.Jobs
             return list;
         }
 
-        private String GenerateNoteText(IEnumerable<CustomField> customFields)
+        private String GenerateNoteText(IEnumerable<StCustomField> customFields)
         {
             var sb = new StringBuilder();
             var account = customFields.SingleOrDefault(c => c.Name.Equals("Account", StringComparison.InvariantCultureIgnoreCase));
-            if (account != null && !String.IsNullOrEmpty(account.Value.Id()))
+            if (account != null && account.Value.Id() >= 0)
             {
                 sb.AppendLine($"Account: {account.Value}");
-                sb.AppendLine($"Account URL: {_config.AccountUrlTemplate.Replace("{{AccountId}}", account.Value.Id())}");
+                sb.AppendLine($"Account URL: {_config.AccountUrlTemplate.Replace("{{AccountId}}", account.Value.Id().ToString())}");
                 sb.AppendLine();
             }
             var asset = customFields.SingleOrDefault(c => c.Name.Equals("Asset", StringComparison.InvariantCultureIgnoreCase));
-            if (asset != null && !String.IsNullOrEmpty(asset.Value.Id()))
+            if (asset != null && account.Value.Id() >= 0)
             {
                 sb.AppendLine($"Asset: {asset.Value}");
-                sb.AppendLine($"Asset URL: {_config.AssetUrlTemplate.Replace("{{AssetId}}", asset.Value.Id())}");
+                sb.AppendLine($"Asset URL: {_config.AssetUrlTemplate.Replace("{{AssetId}}", asset.Value.Id().ToString())}");
                 sb.AppendLine();
             }
             sb.AppendLine();
@@ -136,27 +104,22 @@ namespace PDSI.MCP.TicketSync.Jobs
             return sb.ToString();
         }
 
-        private String GenerateNoteTextHtml(IEnumerable<CustomField> customFields)
+        private String GenerateNoteTextHtml(IEnumerable<StCustomField> customFields)
         {
             var sb = new StringBuilder();
             sb.AppendLine("<p>#SOC2</p>");
             var account = customFields.SingleOrDefault(c => c.Name.Equals("Account", StringComparison.InvariantCultureIgnoreCase));
             if (account != null)
             {
-                sb.AppendLine($"<p>Account: <a href=\"{_config.AccountUrlTemplate.Replace("{{AccountId}}", account.Value.Id())}\">{account.Value}</a></p>");
+                sb.AppendLine($"<p>Account: <a href=\"{_config.AccountUrlTemplate.Replace("{{AccountId}}", account.Value.Id().ToString())}\">{account.Value}</a></p>");
             }
             var asset = customFields.SingleOrDefault(c => c.Name.Equals("Asset", StringComparison.InvariantCultureIgnoreCase));
             if (asset != null)
             {
-                sb.AppendLine($"<p>Asset: <a href=\"{_config.AssetUrlTemplate.Replace("{{AssetId}}", asset.Value.Id())}\">{asset.Value}</a></p>");
+                sb.AppendLine($"<p>Asset: <a href=\"{_config.AssetUrlTemplate.Replace("{{AssetId}}", asset.Value.Id().ToString())}\">{asset.Value}</a></p>");
             }
             return sb.ToString();
         }
 
-        private static Boolean IsAccountOrAsset(CustomField cf)
-        {
-            return String.Equals("Account", cf.Name, StringComparison.InvariantCultureIgnoreCase)
-                || (String.Equals("Asset", cf.Name, StringComparison.InvariantCultureIgnoreCase) && !cf.Value.StartsWith("Pick one", StringComparison.InvariantCultureIgnoreCase));
-        }
     }
 }

@@ -37,11 +37,6 @@ namespace PDSI.MCP.TicketSync
 			For<IVTigerContext>()
 				.LifecycleIs<TransientLifecycle>()
 				.Use(ctx => new VTigerContext(GetMySqlConnection(ctx.GetInstance<IConfiguration>().GetConnectionString("vTiger"))));
-
-			For<IRactablesContext>()
-				.LifecycleIs<TransientLifecycle>()
-				.Use(ctx => new RactablesContext(GetMySqlConnection(ctx.GetInstance<IConfiguration>().GetConnectionString("Racktables"))));
-
 		}
 
 		static IDbConnection GetMySqlConnection(String connectionString)

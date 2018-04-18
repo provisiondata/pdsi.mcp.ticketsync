@@ -8,7 +8,7 @@ namespace PDSI.MCP.TicketSync
 	public interface IJob
 	{
 		String Name { get; }
-		Task<JobResult> Execute();
+		Task<JobResult> ExecuteAsync();
 	}
 
 	public abstract class Job : IJob
@@ -21,7 +21,7 @@ namespace PDSI.MCP.TicketSync
 
 		protected ILogger Logger { get; }
 
-		public abstract Task<JobResult> Execute();
+		public abstract Task<JobResult> ExecuteAsync();
 
 		public override String ToString() => Name;
 	}

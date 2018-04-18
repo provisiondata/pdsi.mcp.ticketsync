@@ -15,7 +15,7 @@ namespace PDSI.MCP.TicketSync.Jobs
             _smarterTrack = smarterTrack;
         }
 
-        public override async Task<JobResult> Execute()
+        public override async Task<JobResult> ExecuteAsync()
         {
             using (var transaction = _smarterTrack.Connection.BeginTransaction())
             {

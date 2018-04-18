@@ -59,4 +59,19 @@ namespace PDSI.SmarterTrackClient
         public String MessageType { get; set; } = "general";
         public Int32 TicketScanLimit { get; set; } = 500;
     }
+
+    public class StCustomField
+    {
+        public String Name { get; set; }
+        public String Value { get; set; }
+    }
+
+    public static class Extensions
+    {
+        public static StCustomField ParseCustomField(this String s)
+        {
+            var r = s.Split(new[] { '=' }, 2, StringSplitOptions.None);
+            return new StCustomField() { Name = r[0], Value = r[1] };
+        }
+    }
 }

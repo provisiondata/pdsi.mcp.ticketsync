@@ -7,19 +7,19 @@ using Serilog;
 
 namespace PDSI.MCP.TicketSync.Jobs
 {
-	public class UpdateRacktablesAssetsInSmarterTrack : Job
+	public class UpdateRackTablesAssetsInSmarterTrack : Job
 	{
-		private readonly IRactablesContext _rackTables;
+		private readonly IRackTablesContext _rackTables;
 		private readonly ISmarterTrackContext _smarterTrack;
 
-		public UpdateRacktablesAssetsInSmarterTrack(ILogger logger, IRactablesContext vTiger, ISmarterTrackContext smarterTrack)
+		public UpdateRackTablesAssetsInSmarterTrack(ILogger logger, IRackTablesContext vTiger, ISmarterTrackContext smarterTrack)
 			: base(logger)
 		{
 			_rackTables = vTiger;
 			_smarterTrack = smarterTrack;
 		}
 
-		public override async Task<JobResult> Execute()
+		public override async Task<JobResult> ExecuteAsync()
 		{
 			try {
 				var objects = await _rackTables.Connection.QueryAsync<rtObject>("SELECT * FROM Object");

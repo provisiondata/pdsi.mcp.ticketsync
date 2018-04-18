@@ -15,7 +15,7 @@ namespace PDSI.MCP.TicketSync
 			}
 		}
 
-        public static String Id(this String s)
+        public static Int32 Id(this String s)
         {
             var start = s.LastIndexOf('[');
             if (start >= 0)
@@ -23,10 +23,14 @@ namespace PDSI.MCP.TicketSync
                 var end = s.LastIndexOf(']');
                 if (end > start)
                 {
-                    return s.Substring(start + 1, end - 1 - start);
+                    var v = s.Substring(start + 1, end - 1 - start);
+                    if (Int32.TryParse(v, out var id))
+                    {
+                        return id;
+                    }
                 }
             }
-            return String.Empty;
+            return -1;
         }
     }
 }

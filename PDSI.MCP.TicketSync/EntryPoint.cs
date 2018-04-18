@@ -82,7 +82,7 @@ namespace PDSI.MCP.TicketSync
                         if (IsEnabled(job))
                         {
                             _log.Information($"TicketSync Started: {job}");
-                            var result = await job.Execute();
+                            var result = await job.ExecuteAsync();
                             _log.Information($"TicketSync Finished: {job}");
                         }
                         else

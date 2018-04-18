@@ -19,7 +19,7 @@ namespace PDSI.MCP.TicketSync.Jobs
 			_smarterTrack = smarterTrack;
 		}
 
-		public override async Task<JobResult> Execute()
+		public override async Task<JobResult> ExecuteAsync()
 		{
 			try {
 				var accounts = await _vTiger.Connection.QueryAsync<vtAccount>("SELECT * FROM vtiger_account");
