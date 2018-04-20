@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Dapper.Contrib.Extensions;
+using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 using StructureMap;
 using StructureMap.Pipeline;
@@ -55,6 +56,7 @@ namespace PDSI.MCP.TicketSync
         public String TicketUrlTemplate { get; set; }
     }
 
+    [Table("Object")]
     public class rtObject
     {
         public UInt32 id { get; set; }
@@ -67,10 +69,11 @@ namespace PDSI.MCP.TicketSync
         public override String ToString() => $"{nameof(rtObject)} [{id}] {name} <{label}>";
     }
 
+    [Table("ObjectLog")]
     public class rtObjectLog
     {
-        public UInt32 id { get; set; }
-        public UInt32 object_id { get; set; }
+        public Int32 id { get; set; }
+        public Int32 object_id { get; set; }
         public String user { get; set; }
         public DateTime date { get; set; }
         public String content { get; set; }
