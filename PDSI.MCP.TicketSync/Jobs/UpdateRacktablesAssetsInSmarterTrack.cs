@@ -23,8 +23,9 @@ namespace PDSI.MCP.TicketSync.Jobs
 		{
 			try {
 				var objects = await _rackTables.Connection.QueryAsync<rtObject>("SELECT * FROM Object");
-				var options = objects.OrderBy(a => a.name).Select(a => $"{a.name} [{a.id}]");
-				var cdf = new StCustomDataFields() {
+				var options = objects.OrderBy(a => a.name).Select(a => $"{a.name} [{a.id}]").ToList();
+                options.Insert(0, "/dev/null [0]");
+                var cdf = new StCustomDataFields() {
 					CustomFieldId = _smarterTrack.Config.AssetCustomFieldId,
 					Options = String.Join("\n", options)
 				};

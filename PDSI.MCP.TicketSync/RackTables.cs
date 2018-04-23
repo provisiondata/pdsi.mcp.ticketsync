@@ -39,8 +39,8 @@ namespace PDSI.MCP.TicketSync
 
 		public RackTablesContext(IDbConnection connection, RackTables config)
 		{
-            Connection = connection;
-            Config = config;
+            Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            Config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
         public IDbConnection Connection { get; }

@@ -23,27 +23,36 @@ namespace PDSI.MCP.TicketSync.Jobs
             var tickets = await GetTicketsAsync(svc);
             foreach (var ticket in tickets)
             {
-                var customFields = await GetAccountOrAssetFieldsAsync(svc, ticket).ConfigureAwait(false);
-                if (customFields.Any())
+                try
                 {
-                    var comment = await GetSoc2CommentAsync(svc, ticket).ConfigureAwait(false);
-                    var notetext = _config.GenerateHtmlComments ? GenerateNoteTextHtml(customFields) : GenerateNoteText(customFields);
-                    if (comment == null)
+                    Logger.Debug("{Job} Processing Ticket [{TicketNumber}]", nameof(GenerateSmarterTrackCommentLinks), ticket.TicketNumber);
+
+                    var customFields = await GetAccountOrAssetFieldsAsync(svc, ticket).ConfigureAwait(false);
+                    if (customFields.Any())
                     {
-                        // Add comment
-                        var result = await svc.AddTicketNoteHtmlWithDateAsync(_config.AuthUserName, _config.AuthPassword, ticket.TicketNumber, _config.MessageType, notetext, DateTime.UtcNow);
-                        Logger.Information("[{TicketNumber}] Added #SOC2 Comment: {Comment}", ticket.TicketNumber, notetext);
+                        var comment = await GetSoc2CommentAsync(svc, ticket).ConfigureAwait(false);
+                        var notetext = _config.GenerateHtmlComments ? GenerateNoteTextHtml(customFields) : GenerateNoteText(customFields);
+                        if (comment == null)
+                        {
+                            // Add comment
+                            var result = await svc.AddTicketNoteHtmlWithDateAsync(_config.AuthUserName, _config.AuthPassword, ticket.TicketNumber, _config.MessageType, notetext, DateTime.UtcNow);
+                            Logger.Information("[{TicketNumber}] Added #SOC2 Comment.", ticket.TicketNumber);
+                        }
+                        else
+                        {
+                            // Update comment
+                            var result = await svc.EditTicketNoteAsync(_config.AuthUserName, _config.AuthPassword, comment.CommentId, ticket.TicketNumber, _config.MessageType, notetext);
+                            Logger.Information("[{TicketNumber}] Updated #SOC2 Comment: {CommentId}", ticket.TicketNumber, comment.CommentId);
+                        }
                     }
                     else
                     {
-                        // Update comment
-                        var result = await svc.EditTicketNoteAsync(_config.AuthUserName, _config.AuthPassword, comment.CommentId, ticket.TicketNumber, _config.MessageType, notetext);
-                        Logger.Information("[{TicketNumber}] Updated #SOC2 Comment: {Comment}", ticket.TicketNumber, notetext);
+                        Logger.Verbose("[{TicketNumber}] Does not have Asset and/or Account", ticket.TicketNumber);
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Logger.Verbose("[{TicketNumber}] Does not have Asset and/or Account", ticket.TicketNumber);
+                    Logger.Error(ex, $"{ex.GetType().Name}: {ex.Message}");
                 }
             }
             await svc.CloseAsync().ConfigureAwait(false);
@@ -86,14 +95,14 @@ namespace PDSI.MCP.TicketSync.Jobs
         {
             var sb = new StringBuilder();
             var account = customFields.SingleOrDefault(c => c.Name.Equals("Account", StringComparison.InvariantCultureIgnoreCase));
-            if (account != null && account.Value.Id() >= 0)
+            if (account != null && account.Value.Id() > 0)
             {
                 sb.AppendLine($"Account: {account.Value}");
                 sb.AppendLine($"Account URL: {_config.AccountUrlTemplate.Replace("{{AccountId}}", account.Value.Id().ToString())}");
                 sb.AppendLine();
             }
             var asset = customFields.SingleOrDefault(c => c.Name.Equals("Asset", StringComparison.InvariantCultureIgnoreCase));
-            if (asset != null && account.Value.Id() >= 0)
+            if (asset != null && account.Value.Id() > 0)
             {
                 sb.AppendLine($"Asset: {asset.Value}");
                 sb.AppendLine($"Asset URL: {_config.AssetUrlTemplate.Replace("{{AssetId}}", asset.Value.Id().ToString())}");

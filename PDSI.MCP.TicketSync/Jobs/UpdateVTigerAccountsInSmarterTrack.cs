@@ -23,7 +23,8 @@ namespace PDSI.MCP.TicketSync.Jobs
 		{
 			try {
 				var accounts = await _vTiger.Connection.QueryAsync<vtAccount>("SELECT * FROM vtiger_account");
-				var options = accounts.OrderBy(a => a.accountname).Select(a => $"{a.accountname} [{a.accountid}]");
+				var options = accounts.OrderBy(a => a.accountname).Select(a => $"{a.accountname} [{a.accountid}]").ToList();
+                options.Insert(0, "/dev/null [0]");
 				var cdf = new StCustomDataFields() {
 					CustomFieldId = _smarterTrack.Config.AccountCustomFieldId,
 					Options = String.Join("\n", options)
