@@ -22,28 +22,27 @@ namespace PDSI.MCP.TicketSync.Jobs
 
         public override async Task<JobResult> ExecuteAsync()
         {
-            var svc = await GetSmarterTrackTicketsServiceAsync();
-            var tickets = await GetTicketsAsync(svc);
+            var tickets = await GetTicketsAsync();
             foreach (var ticket in tickets)
             {
                 Logger.Debug("{Job} Processing Ticket [{TicketNumber}]", nameof(GenerateRactablesLinks), ticket.TicketNumber);
 
                 try
                 {
-                    var customFields = await GetAccountOrAssetFieldsAsync(svc, ticket).ConfigureAwait(false);
+                    var customFields = await GetAccountOrAssetFieldsAsync(ticket).ConfigureAwait(false);
                     var assetField = customFields.SingleOrDefault(cf => cf.Name.Equals("Asset", StringComparison.InvariantCultureIgnoreCase));
                     if (assetField != null)
                     {
                         var object_id = assetField.Value.Id();
                         if (object_id > 0)
                         {
-                            var ticketUrl = await GetTicketUrlAsync(svc, ticket).ConfigureAwait(false);
+                            var ticketUrl = await GetTicketUrlAsync(ticket).ConfigureAwait(false);
 
                             var text = _config.GenerateHtmlComments 
                                 ? GenerateNoteTextHtml(ticket, ticketUrl) 
                                 : GenerateNoteText(ticket, ticketUrl);
 
-                            var comment = await GetSoc2CommentAsync(svc, object_id).ConfigureAwait(false);
+                            var comment = await GetSoc2CommentAsync(object_id).ConfigureAwait(false);
                             if (comment == null)
                             {
                                 // Add comment
@@ -73,12 +72,11 @@ namespace PDSI.MCP.TicketSync.Jobs
                     Logger.Error(ex, $"{ex.GetType().Name}: {ex.Message}");
                 }
             }
-            await svc.CloseAsync().ConfigureAwait(false);
 
             return new JobResult() { };
         }
 
-        private async Task<rtObjectLog> GetSoc2CommentAsync(svcTicketsSoapClient svc, Int32 object_id)
+        private async Task<rtObjectLog> GetSoc2CommentAsync(Int32 object_id)
         {
             var list = await _ractablesContext.Connection.QueryAsync<rtObjectLog>("SELECT * FROM ObjectLog WHERE object_id = @object_id", new { object_id }).ConfigureAwait(false);
             return list.SingleOrDefault(log => _config.AuthUserName.Equals(log.user, StringComparison.InvariantCultureIgnoreCase) && (!String.IsNullOrWhiteSpace(log.content) && log.content.Contains("#SOC2")));

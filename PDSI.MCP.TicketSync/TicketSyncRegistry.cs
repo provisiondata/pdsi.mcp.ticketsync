@@ -37,7 +37,7 @@ namespace PDSI.MCP.TicketSync
 			For<IVTigerContext>()
 				.LifecycleIs<TransientLifecycle>()
 				.Use(ctx => new VTigerContext(GetMySqlConnection(ctx.GetInstance<IConfiguration>().GetConnectionString("vTiger"))));
-		}
+        }
 
 		static IDbConnection GetMySqlConnection(String connectionString)
 		{
