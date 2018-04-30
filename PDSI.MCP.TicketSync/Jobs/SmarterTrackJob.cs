@@ -25,7 +25,7 @@ namespace PDSI.MCP.TicketSync.Jobs
 
         protected Task CloseTicketAsync(TicketInfo ticket, String comment)
         {
-            Logger.Information("{Job} Closed Ticket [{TicketNumber}] {comment}", GetType().Name, ticket.TicketNumber, comment);
+            Logger.Verbose("{Job} Closed Ticket [{TicketNumber}] {comment}", GetType().Name, ticket.TicketNumber, comment);
             return Service.CloseTicketAsync(Config.AuthUserName, Config.AuthPassword, ticket.TicketNumber, comment);
         }
 
@@ -35,7 +35,7 @@ namespace PDSI.MCP.TicketSync.Jobs
             {
                 await Service.AddTicketNoteHtmlWithDateAsync(Config.AuthUserName, Config.AuthPassword, ticket.TicketNumber, "general", comment, DateTime.UtcNow);
             }
-            Logger.Information("{Job} Deleted Ticket [{TicketNumber}]", GetType().Name, ticket.TicketNumber);
+            Logger.Verbose("{Job} Deleted Ticket [{TicketNumber}]", GetType().Name, ticket.TicketNumber);
             await Service.DeleteTicketAsync(Config.AuthUserName, Config.AuthPassword, ticket.ID);
         }
 
@@ -44,11 +44,23 @@ namespace PDSI.MCP.TicketSync.Jobs
             return new svcTicketsSoapClient(svcTicketsSoapClient.EndpointConfiguration.svcTicketsSoap12, Config.EndpointAddress);
         }
 
-        protected async Task<IEnumerable<TicketInfo>> GetTicketsAsync()
+        protected async Task<IEnumerable<TicketInfo>> GetTicketsAsync(Int32 take, params String[] nameEqualsValue)
         {
-            var response = await Service.GetTicketsBySearchAsync(Config.AuthUserName, Config.AuthPassword, new ArrayOfString()).ConfigureAwait(false);
-            var tickets = response.Body.GetTicketsBySearchResult.Tickets.OrderByDescending(t => t.LastReplyDateUtc).Take(Config.TicketScanLimit);
-            return tickets;
+            var tickets = new List<TicketInfo>();
+            var searchCriteria = new ArrayOfString();
+            if (!(nameEqualsValue is null) && nameEqualsValue.Length > 0)
+            {
+                searchCriteria.AddRange(nameEqualsValue);
+            }
+
+            // Unassigned Tickets
+            var response = await Service.GetTicketsBySearchAsync(Config.AuthUserName, Config.AuthPassword, new ArrayOfString() { "sortorder=ascending", "userid=1" }).ConfigureAwait(false);
+            tickets.AddRange(response.Body.GetTicketsBySearchResult.Tickets);
+            // Assigned Tickets
+            response = await Service.GetTicketsBySearchAsync(Config.AuthUserName, Config.AuthPassword, searchCriteria).ConfigureAwait(false);
+            tickets.AddRange(response.Body.GetTicketsBySearchResult.Tickets);
+
+            return tickets.OrderByDescending(t => t.LastReplyDateUtc).Take(take);
         }
 
         protected async Task<IEnumerable<StCustomField>> GetAccountOrAssetFieldsAsync(TicketInfo ticket)

@@ -20,35 +20,45 @@ namespace PDSI.MCP.TicketSync.Jobs
 
         public override async Task<JobResult> ExecuteAsync()
         {
-            var tickets = await GetTicketsAsync();
+            var tickets = await GetTicketsAsync(_config.TicketScanLimit);
+            var counter = 0;
             foreach (var ticket in tickets)
             {
+                Logger.LogTicket(++counter, ticket);
                 try
                 {
-                    var m = _config.Tickets.SingleOrDefault(t => t.Matches(ticket));
-                    if (m != null)
+                    var rule = _config.Rules.SingleOrDefault(t => t.Matches(ticket));
+                    if (rule != null)
                     {
-                        Logger.Debug("{Job} Processing Ticket [{TicketNumber}]", nameof(SmarterTrackTicketCloser), ticket.TicketNumber);
-                        if (m.Action == TicketCloserConfig.Ticket.TicketAction.Close && !ticket.IsOpen) continue;
-                        if (m.Action == TicketCloserConfig.Ticket.TicketAction.Delete && ticket.IsDeleted) continue;
-                        Logger.Debug("{Job} Ticket [{TicketNumber}] is closeable.", nameof(SmarterTrackTicketCloser), ticket.TicketNumber);
-                        if (!String.IsNullOrWhiteSpace(m.Account))
+                        if (rule.Action == TicketCloserConfig.Rule.TicketAction.Close && !ticket.IsOpen)
                         {
-                            await SetTicketAccountAsync(ticket, m.Account);
+                            Logger.Debug("{Job} Ticket [{TicketNumber}] matches {Rule} but is already {Action}.", nameof(SmarterTrackTicketCloser), ticket.TicketNumber, rule.Name, rule.Action);
+                            continue;
                         }
-                        if (!String.IsNullOrWhiteSpace(m.Asset))
+                        if (rule.Action == TicketCloserConfig.Rule.TicketAction.Delete && ticket.IsDeleted)
                         {
-                            await SetTicketAssetAsync(ticket, m.Account);
+                            Logger.Debug("{Job} Ticket [{TicketNumber}] matches {Rule} but is already {Action}.", nameof(SmarterTrackTicketCloser), ticket.TicketNumber, rule.Name, rule.Action);
+                            continue;
                         }
-                        switch (m.Action)
+
+                        if (!String.IsNullOrWhiteSpace(rule.Account))
                         {
-                            case TicketCloserConfig.Ticket.TicketAction.Close:
-                                await CloseTicketAsync(ticket, m.Comment);
+                            await SetTicketAccountAsync(ticket, rule.Account);
+                        }
+                        if (!String.IsNullOrWhiteSpace(rule.Asset))
+                        {
+                            await SetTicketAssetAsync(ticket, rule.Asset);
+                        }
+                        switch (rule.Action)
+                        {
+                            case TicketCloserConfig.Rule.TicketAction.Close:
+                                await CloseTicketAsync(ticket, rule.Comment);
                                 break;
-                            case TicketCloserConfig.Ticket.TicketAction.Delete:
-                                await DeleteTicketAsync(ticket, m.Comment);
+                            case TicketCloserConfig.Rule.TicketAction.Delete:
+                                await DeleteTicketAsync(ticket, rule.Comment);
                                 break;
                         }
+                        Logger.Information("{Job} Ticket [{TicketNumber}] matched {Rule} and was {Action}.", nameof(SmarterTrackTicketCloser), ticket.TicketNumber, rule.Name, rule.Action);
                     }
                 }
                 catch (Exception ex)
@@ -81,10 +91,12 @@ namespace PDSI.MCP.TicketSync.Jobs
         {
             public static String SectionName => "TicketCloser";
 
-            public IEnumerable<Ticket> Tickets { get; set; }
+            public IEnumerable<Rule> Rules { get; set; }
+            public Int32 TicketScanLimit { get; set; } = 500;
 
-            public class Ticket
+            public class Rule
             {
+                public String Name { get; set; }
                 public String Subject { get; set; } = String.Empty;
                 public String Email { get; set; } = String.Empty;
                 public String Account { get; set; } = String.Empty;

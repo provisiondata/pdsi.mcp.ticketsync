@@ -15,5 +15,15 @@ namespace PDSI.MCP.TicketSync.Test
             Assert.Equal(299, Extensions.Id("Provision Data Systems Inc. (PDSI) [299]"));
             Assert.Equal(299, Extensions.Id("Provision Data Systems Inc. [123] (PDSI) [299]"));
         }
+
+        [Fact]
+        public void Left_happy_path()
+        {
+            Assert.Null(Extensions.Left(null, 100));
+            Assert.Empty(Extensions.Left("", 100));
+            Assert.Equal("Provision", Extensions.Left("Provision", 9));
+            Assert.Equal("Provision", Extensions.Left("Provision", 100));
+            Assert.Equal("Provision", Extensions.Left("Provision Data Systems Inc.", 9));
+        }
     }
 }

@@ -54,6 +54,7 @@ namespace PDSI.MCP.TicketSync
         public Boolean GenerateHtmlComments { get; set; }
         public String AccountUrlTemplate { get; set; }
         public String TicketUrlTemplate { get; set; }
+        public Int32 TicketScanLimit { get; set; } = 500;
     }
 
     [Table("Object")]
