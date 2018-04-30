@@ -1,4 +1,6 @@
-﻿using System;
+﻿using PDSI.SmarterTrackClient;
+using Serilog;
+using System;
 
 namespace PDSI.MCP.TicketSync
 {
@@ -31,6 +33,20 @@ namespace PDSI.MCP.TicketSync
                 }
             }
             return -1;
+        }
+
+        public static String Left(this String s, Int32 l)
+        {
+            if (s is null) return null;
+            if (String.IsNullOrWhiteSpace(s)) return String.Empty;
+            return s.Substring(0, s.Length < l ? s.Length : l);
+        }
+
+        public static void LogTicket(this ILogger logger, Int32 counter, TicketInfo ticket)
+        {
+            logger.Verbose("{Count,5:N0} Ticket [{TicketNumber}] {LastReplyDateUtc} Active:{IsActive,5} Open:{IsOpen,5} Deleted:{IsDeleted} D:{IdDepartment} G:{IdGroup} U:{IdAgent} {Subject:S50}",
+                counter, ticket.TicketNumber, ticket.LastReplyDateUtc, ticket.IsActive, ticket.IsOpen, ticket.IsDeleted,
+                ticket.IdDepartment, ticket.IdGroup, ticket.IdAgent, ticket.Subject.Left(100));
         }
     }
 }

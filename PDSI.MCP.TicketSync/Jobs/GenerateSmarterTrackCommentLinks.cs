@@ -19,13 +19,13 @@ namespace PDSI.MCP.TicketSync.Jobs
 
         public override async Task<JobResult> ExecuteAsync()
         {
-            var tickets = await GetTicketsAsync();
+            var tickets = await GetTicketsAsync(_config.TicketScanLimit);
+            var counter = 0;
             foreach (var ticket in tickets)
             {
+                Logger.LogTicket(++counter, ticket);
                 try
                 {
-                    Logger.Debug("{Job} Processing Ticket [{TicketNumber}]", nameof(GenerateSmarterTrackCommentLinks), ticket.TicketNumber);
-
                     var customFields = await GetAccountOrAssetFieldsAsync(ticket).ConfigureAwait(false);
                     if (customFields.Any())
                     {
